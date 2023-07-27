@@ -1,25 +1,31 @@
 import { useRouter } from "next/router";
-import { getEventById } from "../../dummy-events";
+// import { getEventById } from "../../dummy-events";
 import { Fragment } from "react";
 import EventSummary from "../../components/event-detail/event-summary";
 import EventLogistics from "../../components/event-detail/event-logistics";
 import EventContent from "../../components/event-detail/event-content";
 import Button from "../../components/UI/Button";
 import ErrorAlert from "../../components/events/error-alert";
+import { getEventById } from "../../helpers/api-util";
 
-function EventDetailPage() {
+import { fetchEvents } from "../../helpers/fetchEvents";
+import { getFeaturedEvents } from "../../dummy-events";
+
+function EventDetailPage(props) {
   const router = useRouter();
-  const eventId = router.query.eventId;
-  const event = getEventById(eventId);
+  // const eventId = router.query.eventId;
+  // const event = getEventById(eventId);
+  const event = props.event;
   const goBack = () => {
     router.back();
   };
+
 
   if (!event) {
     return (
       <Fragment>
         <ErrorAlert>
-          <p>Cannot find that event.</p>
+          <p>Cannot find that event</p>
         </ErrorAlert>
         <div className="center">
           <Button onClick={goBack}>Go back!</Button>
@@ -43,5 +49,44 @@ function EventDetailPage() {
     </Fragment>
   );
 }
+
+export async function getStaticProps(context) {
+  const eventId = context.params.eventId;
+  const event = await getEventById(eventId);
+  return {
+    props: { event: event },
+    revalidate: 30
+  };
+}
+
+export async function getStaticPaths() {
+    // const events = await getAllEvents();
+    const events = await getFeaturedEvents();
+    const paths = events.map(event => ({params: { eventId: event.id}}));
+      return {
+        paths: paths,
+        fallback: 'blocking'
+      }
+}
+
+// export async function getStaticProps(context) {
+//   const { params } = context;
+//   const eventId = params.eventId;
+//   const transformedEvents = await fetchEvents();
+//   const event = transformedEvents.find((event) => event.id === eventId);
+//   return {
+//     props: { event: event },
+//   };
+// }
+
+// export async function getStaticPaths() {
+//   const transformedEvents = await fetchEvents();
+//   const ids = transformedEvents.map((event) => event.id);
+//   const pathsWithParams = ids.map((id) => ({ params: { eventId: id } }));
+//   return {
+//     paths: pathsWithParams,
+//     fallback: true,
+//   };
+// }
 
 export default EventDetailPage;

@@ -6,6 +6,8 @@ import EventsList from "../../components/events/EventsList";
 import ResultsTitle from "../../components/events/results-title";
 import ErrorAlert from "../../components/events/error-alert";
 import useSWR from "swr";
+import { fetcher } from "../../helpers/fetchEvents";
+import Head from "next/head";
 
 function FilteredEvents(props) {
   const [loadedEvents, setLoadedEvents] = useState();
@@ -16,33 +18,16 @@ function FilteredEvents(props) {
   };
 
   const filterData = router.query.slug;
-  const fetcher = (...args) => fetch(...args).then((res) => res.json())
-  .then((data) => {
-    const events = [];
-    for (const key in data) {
-      events.push({
-        id: key,
-        title: data[key].title,
-        description: data[key].description,
-        location: data[key].location,
-        date: data[key].date,
-        image: data[key].image,
-        isFeatured: data[key].isFeatured,
-      });
-    }
-    return events;
-  })
   const { data, error } = useSWR(
     "https://react-http-48ff4-default-rtdb.firebaseio.com/events.json",
     fetcher
   );
 
   useEffect(() => {
-    if(data){
+    if (data) {
       setLoadedEvents(data);
     }
-
-  }, [data])
+  }, [data]);
 
   // useEffect(() => {
   //   if (data) {
@@ -62,14 +47,42 @@ function FilteredEvents(props) {
   //   }
   // }, [data]);
 
+  let pageHeadData = (
+    <Head>
+      <title>Events loading</title>
+      <meta
+        name="description"
+        content={`Loading...`}
+      />
+    </Head>
+  );
+
+
   if (!loadedEvents) {
-    return <p>Loading...</p>;
+    return (
+      <Fragment>
+        {pageHeadData}
+        <p>Loading...</p>
+      </Fragment>
+    );
   }
+
+
   const year = filterData[0];
   const month = filterData[1];
 
   const numYear = +year;
   const numMonth = +month;
+
+  pageHeadData = (
+    <Head>
+      <title>Events ${numMonth}/${numYear}</title>
+      <meta
+        name="description"
+        content={`All our events for ${numMonth}/${numYear}`}
+      />
+    </Head>
+  );
 
   if (
     isNaN(numYear) ||
@@ -82,6 +95,7 @@ function FilteredEvents(props) {
   ) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>Invalid filter, please adjust!</p>
         </ErrorAlert>
@@ -117,6 +131,7 @@ function FilteredEvents(props) {
   if (!filteredEvents || filteredEvents.length === 0) {
     return (
       <Fragment>
+        {pageHeadData}
         <ErrorAlert>
           <p>No events in the selected time period!</p>
         </ErrorAlert>
@@ -131,6 +146,7 @@ function FilteredEvents(props) {
 
   return (
     <Fragment>
+      {pageHeadData}
       <ResultsTitle date={date} />
       <EventsList items={filteredEvents} />
     </Fragment>
@@ -175,4 +191,3 @@ export default FilteredEvents;
 //     },
 //   };
 // }
-

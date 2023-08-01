@@ -11,6 +11,8 @@ import { getEventById } from "../../helpers/api-util";
 import { fetchEvents } from "../../helpers/fetchEvents";
 import { getFeaturedEvents } from "../../dummy-events";
 import Head from "next/head";
+import Comments from "../../components/input/comments";
+import CommentSection from "../../components/input/CommentSection";
 
 function EventDetailPage(props) {
   const router = useRouter();
@@ -51,6 +53,8 @@ function EventDetailPage(props) {
       <EventContent>
         <p>{event.description}</p>
       </EventContent>
+      <Comments eventId={event.id} />
+      {/* <CommentSection/> */}
     </Fragment>
   );
 }

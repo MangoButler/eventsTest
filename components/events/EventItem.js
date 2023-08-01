@@ -3,7 +3,7 @@ import Button from "../UI/Button";
 import DateIcon from "../icons/DateIcon";
 import AddressIcon from "../icons/AddressIcon";
 import ArrowRightIcon from "../icons/ArrowRightIcon";
-import Image from "next/image";
+import Image from "next/image"; //image component automatically adds lazy loading, optimizes size and format of the image
 
 const EventItem = (props) => {
   const { title, image, date, location, id } = props;
@@ -19,7 +19,7 @@ const EventItem = (props) => {
 
   return (
     <li className={classes.item}>
-      <Image src={"/" + image} alt={title} width={250} height={160}/>
+      <Image src={"/" + image} alt={title} width={250} height={160}/> 
       <div className={classes.content}>
         <div className={classes.summary}>
           <h2>{props.title}</h2>

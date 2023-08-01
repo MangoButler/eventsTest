@@ -1,3 +1,8 @@
+import fs from "fs";
+import path from "path";
+
+
+
 export async function getAllEvents() {
   const response = await fetch(
     "https://react-http-48ff4-default-rtdb.firebaseio.com/events.json"
@@ -50,3 +55,19 @@ export async function getAllIds() {
   const allEvents = await getAllEvents();
   return allEvents.map((event) => event.id);
 }
+
+
+
+
+
+export function buildPath(fileName) {
+    const filePath = path.join(process.cwd(), 'data', `${fileName}.json`);
+    return filePath;
+}
+
+export function readData (filePath) {
+  const fileData = fs.readFileSync(filePath);
+  const data = JSON.parse(fileData);
+  return data;
+}
+

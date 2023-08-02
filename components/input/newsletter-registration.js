@@ -3,26 +3,35 @@ import classes from "./newsletter-registration.module.css";
 
 function NewsletterRegistration() {
   const [isInvalid, setIsInvalid] = useState(false);
+  const [error, setError] = useState(null);
   const emailInputRef = useRef();
   function registrationHandler(event) {
     event.preventDefault();
-    const newMail = emailInputRef.current.value;
-    if (!newMail.includes("@") || !newMail.includes(".")) {
+
+    const enteredEmail = emailInputRef.current.value;
+    if (!enteredEmail || !enteredEmail.includes("@")) {
       setIsInvalid(true);
       return;
     }
-    const reqBody = { email: newMail };
     setIsInvalid(false);
 
     fetch("/api/newsletter", {
       method: "POST",
-      body: JSON.stringify(reqBody),
+      body: JSON.stringify({ email: enteredEmail }),
       headers: {
-        "Content-type": "application/json",
+        "Content-Type": "application/json",
       },
     })
       .then((response) => response.json())
-      .then((data) => console.log(data));
+      .then((data) => {
+          console.log(data);
+          if(data.status === 500){
+            setError(data);
+            return;
+          }
+          setError(null);
+
+      });
 
     // fetch user input (state or refs)
     // optional: validate input
@@ -43,6 +52,7 @@ function NewsletterRegistration() {
           />
           <button>Register</button>
           {isInvalid && <p>Enter valid email</p>}
+          {error && <p>{error.message}</p>}
         </div>
       </form>
     </section>
@@ -50,3 +60,22 @@ function NewsletterRegistration() {
 }
 
 export default NewsletterRegistration;
+
+// event.preventDefault();
+// const newMail = emailInputRef.current.value;
+// if (!newMail.includes("@") || !newMail.includes(".")) {
+//   setIsInvalid(true);
+//   return;
+// }
+// const reqBody = { email: newMail };
+// setIsInvalid(false);
+
+// fetch("/api/newsletter", {
+//   method: "POST",
+//   body: JSON.stringify(reqBody),
+//   headers: {
+//     "Content-type": "application/json",
+//   },
+// })
+//   .then((response) => response.json())
+//   .then((data) => console.log(data));

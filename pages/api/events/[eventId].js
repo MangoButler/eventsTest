@@ -1,6 +1,7 @@
 import { buildPath, readData } from "../../../helpers/api-util";
 import fs from "fs";
 
+
 function handler(req, res) {
   if (req.method === "POST") {
     const eventId = req.query.eventId;

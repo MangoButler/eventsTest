@@ -3,7 +3,6 @@ import EventSearch from "../../components/events/EventSearch";
 import EventsList from "../../components/events/EventsList";
 import { getAllEvents } from "../../helpers/api-util";
 import { useRouter } from "next/router";
-import { fetchEvents } from "../../helpers/fetchEvents";
 import Head from "next/head";
 
 

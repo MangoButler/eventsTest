@@ -1,10 +1,13 @@
-import { useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import classes from "./newsletter-registration.module.css";
+import NotificationContext from "../../store/notification-context";
 
 function NewsletterRegistration() {
+  const notificationCtx = useContext(NotificationContext);
+
   const [isInvalid, setIsInvalid] = useState(false);
-  const [error, setError] = useState(null);
   const emailInputRef = useRef();
+
   function registrationHandler(event) {
     event.preventDefault();
 
@@ -15,6 +18,12 @@ function NewsletterRegistration() {
     }
     setIsInvalid(false);
 
+    notificationCtx.showNotification({
+      title: "Signing up!",
+      message: "Regisitering for newsletter",
+      status: "pending",
+    });
+
     fetch("/api/newsletter", {
       method: "POST",
       body: JSON.stringify({ email: enteredEmail }),
@@ -22,20 +31,29 @@ function NewsletterRegistration() {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        return response.json().then((data) => {
+          throw new Error(data.message || "Something went wrong");
+        });
+        //if need to throw an error inside the then catch block, but the data also needs parsing, use nested then block and return it
+      })
       .then((data) => {
-          console.log(data);
-          if(data.status === 500){
-            setError(data);
-            return;
-          }
-          setError(null);
-
+        notificationCtx.showNotification({
+          title: "Success",
+          message: "Successfully registered for newsletter.",
+          status: "success",
+        });
+      })
+      .catch((error) => {
+        notificationCtx.showNotification({
+          title: "Error",
+          message: error.message || "Something went wrong",
+          status: "error",
+        });
       });
-
-    // fetch user input (state or refs)
-    // optional: validate input
-    // send valid data to API
   }
 
   return (
@@ -52,7 +70,6 @@ function NewsletterRegistration() {
           />
           <button>Register</button>
           {isInvalid && <p>Enter valid email</p>}
-          {error && <p>{error.message}</p>}
         </div>
       </form>
     </section>

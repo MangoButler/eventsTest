@@ -1,13 +1,15 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import CommentList from "./comment-list";
 import NewComment from "./new-comment";
 import classes from "./comments.module.css";
 import ErrorAlert from "../events/error-alert";
+import NotificationContext from "../../store/notification-context";
+import LoadingAlert from "../UI/LoadingAlert";
 
 function Comments(props) {
   const { eventId } = props;
-
+  const notificationCtx = useContext(NotificationContext);
   const [showComments, setShowComments] = useState(false);
   const [commentsList, setCommentsList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -17,16 +19,22 @@ function Comments(props) {
     if (showComments) {
       setIsLoading(true);
       fetch("/api/comments/" + eventId)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.status === 500) {
-            setError(data.message);
-            setIsLoading(false);
-            return;
+        .then((response) => {
+          if (response.ok) {
+            return response.json();
           }
+          return response.json().then((data) => {
+            throw new Error(data.message);
+          });
+        })
+        .then((data) => {
           setCommentsList(data.comments);
           setError(null);
           setIsLoading(false);
+        })
+        .catch((error) => {
+          setIsLoading(false);
+          setError(error.message);
         });
     }
   }, [showComments]);
@@ -38,7 +46,11 @@ function Comments(props) {
   }
 
   function addCommentHandler(commentData) {
-    setIsLoading(true);
+    notificationCtx.showNotification({
+      title: "Please wait",
+      message: "Adding comment...",
+      status: "pending",
+    });
     fetch("/api/comments/" + eventId, {
       method: "POST",
       body: JSON.stringify(commentData),
@@ -46,16 +58,28 @@ function Comments(props) {
         "Content-Type": "application/json",
       },
     })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log(data);
-        if(data.status === 201){
-          setCommentsList(prevStatus => [data.comment, ...prevStatus]);
-          setIsLoading(false);
-          return;
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
         }
-        setError(data.message);
-        setIsLoading(false);
+        return response.json().then((data) => {
+          throw new Error(data.message || "Failed to add comment");
+        });
+      })
+      .then((data) => {
+        setCommentsList((prevStatus) => [data.comment, ...prevStatus]);
+        notificationCtx.showNotification({
+          title: "Success",
+          message: "Succesfully added comment!",
+          status: "success",
+        });
+      })
+      .catch((error) => {
+        notificationCtx.showNotification({
+          title: "Error",
+          message: error.message || "Something went wrong",
+          status: "error",
+        });
       });
   }
 
@@ -64,12 +88,12 @@ function Comments(props) {
       <button onClick={toggleCommentsHandler}>
         {showComments ? "Hide" : "Show"} Comments
       </button>
-      {isLoading && <ErrorAlert>Loading</ErrorAlert>}
+      {isLoading && <LoadingAlert/>}
       {showComments && !isLoading && (
         <NewComment onAddComment={addCommentHandler} />
       )}
       {error && !isLoading && <ErrorAlert>{error}</ErrorAlert>}
-      {showComments && !isLoading && <CommentList list={commentsList} />}
+      {showComments && !error && !isLoading && <CommentList list={commentsList} />}
     </section>
   );
 }

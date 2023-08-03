@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
+
 import classes from './comment-list.module.css';
 
 function CommentList(props) {
   const { list:comments } = props;
 
-  if (!comments) {
+  if (!comments || comments.length === 0) {
     return <p>No Comments Yet!</p>;
   }
 

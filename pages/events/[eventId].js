@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-// import { getEventById } from "../../dummy-events";
 import { Fragment } from "react";
 import EventSummary from "../../components/event-detail/event-summary";
 import EventLogistics from "../../components/event-detail/event-logistics";
@@ -8,11 +7,9 @@ import Button from "../../components/UI/Button";
 import ErrorAlert from "../../components/events/error-alert";
 import { getEventById } from "../../helpers/api-util";
 
-import { fetchEvents } from "../../helpers/fetchEvents";
 import { getFeaturedEvents } from "../../dummy-events";
 import Head from "next/head";
 import Comments from "../../components/input/comments";
-import CommentSection from "../../components/input/CommentSection";
 
 function EventDetailPage(props) {
   const router = useRouter();
@@ -22,7 +19,6 @@ function EventDetailPage(props) {
   const goBack = () => {
     router.back();
   };
-
 
   if (!event) {
     return (
@@ -41,7 +37,7 @@ function EventDetailPage(props) {
     <Fragment>
       <Head>
         <title>{event.title}</title>
-        <meta name="description" content={event.description}/>
+        <meta name="description" content={event.description} />
       </Head>
       <EventSummary title={event.title} />
       <EventLogistics
@@ -64,18 +60,18 @@ export async function getStaticProps(context) {
   const event = await getEventById(eventId);
   return {
     props: { event: event },
-    revalidate: 30
+    revalidate: 30,
   };
 }
 
 export async function getStaticPaths() {
-    // const events = await getAllEvents();
-    const events = await getFeaturedEvents();
-    const paths = events.map(event => ({params: { eventId: event.id}}));
-      return {
-        paths: paths,
-        fallback: 'blocking'
-      }
+  // const events = await getAllEvents();
+  const events = await getFeaturedEvents();
+  const paths = events.map((event) => ({ params: { eventId: event.id } }));
+  return {
+    paths: paths,
+    fallback: "blocking",
+  };
 }
 
 // export async function getStaticProps(context) {
